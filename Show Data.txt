@@ -1,0 +1,261 @@
+function getproductdata(category='ชำรุดต้องซ่อมบำรุง'){
+  var sheeturl = 'https://docs.google.com/spreadsheets/d/1T6m2UeF_8bpNFulnfi4u8UcGL5cf34PelC6fq2TRZeM/edit?usp=sharing'
+  var sheetname = 'เเจ้งซ่อม'
+  var psheet = gspandas.gsdataframe(sheeturl,sheetname)
+  var pinfo = psheet.getrowdict('detRR',category)
+  Logger.log(pinfo)
+  // for (var i = 0; i < pinfo.length; i++) {
+  //   Logger.log(pinfo[i])
+  // }
+  return pinfo
+}
+
+function genproductflex(category,ncol=3){
+  var pdata = getproductdata(category)
+  //เอาตามความยาวที่อยู่เป็นชีท
+  var ncol = pdata.length
+  var pflex = getmultipleflex(pdata,ncol)
+  Logger.log(pdata.length)
+  return pflex
+}
+
+function getproductflex(p_id,p_name,p_img,altText='This is a Flex Message'){
+
+  var flextemplate = {
+  "type": "carousel",
+  "contents": [
+    {
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "text",
+            "text": ' P_name :' + p_name ,
+            "wrap": true,
+            "weight": "bold",
+            "size": "xl"
+          },
+          {
+            "type": "box",
+            "layout": "baseline",
+            "contents": [
+              {
+                "type": "text",
+                "text": ' P_ID :' + p_id ,
+                "wrap": true,
+                "weight": "bold",
+                "size": "sm",
+                "flex": 0
+              }
+            ]
+          }
+        ]
+      },
+      "footer": {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "button",
+            "style": "primary",
+            "action": {
+              "type": "uri",
+              "label": "เพิ่มรายการ",
+              "uri": "https://linecorp.com&quot"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+  var lineres = {}
+  lineres['type'] = 'flex'
+  lineres['altText'] = altText
+  lineres['contents'] = flextemplate
+
+  var lr = {
+  "line_payload":[
+      lineres
+    ],
+  "response_type": "object"
+  }
+  return lr
+}
+
+function doGet(request){
+ // Change Spread Sheet url
+ var category = request.parameter.category
+ var ncol = request.parameter.ncol
+ // Logger.log(category,ncol)
+ var result = genproductflex(category,ncol)
+ // Logger.log(jo)
+ result = JSON.stringify(result);
+ return ContentService.createTextOutput(result).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getmenuflex(m_name,m_phone,m_id,m_map,m_status){
+
+    var flextemplate =
+    {
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [],
+    "paddingAll": "0px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+              {
+                "type": "text",
+                "contents": [],
+                "size": "xl",
+                "wrap": true,
+                "text": "Name " + m_name,
+                "color": "#ffffff",
+                "weight": "bold"
+              },
+              {
+                "type": "text",
+                "text": "Phone "+ m_phone,
+                "color": "#ffffffcc",
+                "size": "sm"
+              },
+              {
+                "type": "text",
+                "text": "ID " + m_id,
+                "color": "#ffffffcc",
+                "size": "sm"
+              }
+            ],
+            "spacing": "sm"
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+              {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                  {
+                    "type": "text",
+                    "contents": [],
+                    "size": "sm",
+                    "wrap": true,
+                    "margin": "lg",
+                    "color": "#ffffffde",
+                    "text": "Map: " + m_map ,
+                    "action": {
+                      "type": "uri",
+                      "label": "action",
+                      "uri": m_map
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "contents": [],
+                    "size": "sm",
+                    "wrap": true,
+                    "margin": "lg",
+                    "color": "#ffffffde",
+                    "text": "Status: " + m_status
+                  }
+                ]
+              }
+            ],
+            "paddingAll": "13px",
+            "backgroundColor": "#ffffff1A",
+            "cornerRadius": "2px",
+            "margin": "xl"
+          }
+        ]
+      }
+    ],
+    "paddingAll": "20px",
+    "backgroundColor": "#464F69",
+     "action": {
+      "type": "message",
+      "label": "action",
+      "text": '0' + m_id
+    }
+  }
+}
+
+return flextemplate
+}
+
+function getrowmenu(mlist){
+  var mltemp = []
+  for (let m in mlist){
+    let m_id = mlist[m]['menu_id']
+    let m_name = mlist[m]['menu_name']
+    let m_phone = mlist[m]['menu_phone']
+    let m_map = mlist[m]['menu_map']
+    let m_status = mlist[m]['menu_status']
+    var mtemp = getmenuflex(m_name,m_phone,m_id,m_map,m_status)
+    mltemp.push(mtemp)
+   
+  }
+  return mltemp
+}
+
+
+function getmultipleflex(mlist, ncol = 1) {
+ 
+  //let ncol = 3
+  //let ncol = mlist.length
+  let nrow = 1
+  Logger.log("getmultipleflex " + ncol)
+  Logger.log(nrow)
+  let lpayloadList = []
+  for (i = 0; i < nrow; i++){
+    let mltemp = []
+    for (j=0; j< ncol; j++){
+      let ind = i*ncol + j
+      let m_id = mlist[ind]['idRR']
+      let m_name = mlist[ind]['nameRR']
+      let m_phone = mlist[ind]['phoneRR']
+      let m_map = mlist[ind]['locationRR']
+      let m_status = mlist[ind]['detRR']
+      var mtemp = getmenuflex(m_name,m_phone,m_id,m_map,m_status)
+      mltemp.push(mtemp)
+      //Logger.log(mtemp)
+    }
+   
+    var flextemplate = {
+    "type": "carousel",
+    "contents": mltemp
+    }
+
+    var lineres = {}
+    lineres['type'] = 'flex'
+    lineres['altText'] = 'This is Flex message'
+    lineres['contents'] = flextemplate
+    lpayloadList.push(lineres)
+
+
+  }
+
+  var lr = {
+  "line_payload": lpayloadList,
+  "response_type": "object"
+  }
+  //Logger.log(lr)
+  return lr
+}

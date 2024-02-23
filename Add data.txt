@@ -1,0 +1,21 @@
+function doGet(request){
+    var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1T6m2UeF_8bpNFulnfi4u8UcGL5cf34PelC6fq2TRZeM/edit?usp=sharing");
+    var sheet = ss.getSheetByName('เเจ้งซ่อม');
+    var lastRow = sheet.getLastRow();
+    
+    // Generate idRR with leading zeros
+    var idRR = ("00" + (lastRow + 1)).slice(-2);
+
+    var nameRR = request.parameter.nameRR;
+    var phoneRR = "'"+request.parameter.phoneRR;
+    var locationRR = request.parameter.locationRR;
+    var detRR = request.parameter.detRR;
+ 
+    sheet.appendRow([idRR, nameRR, phoneRR, locationRR, detRR]);
+    var result = {};
+    result.result = 'added';
+    result.idRR = idRR;
+    
+    var resultJSON = JSON.stringify(result);
+    return ContentService.createTextOutput(resultJSON).setMimeType(ContentService.MimeType.JSON);
+}

@@ -1,0 +1,28 @@
+function doGet(request) {
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1T6m2UeF_8bpNFulnfi4u8UcGL5cf34PelC6fq2TRZeM/edit?usp=sharing");
+  var sheet = ss.getSheetByName('เเจ้งซ่อม');
+  var idRR = parseInt(request.parameter.idRR, 10);
+  //var idRR = 7 ;
+  var detRR = request.parameter.detRR; // เพิ่มพารามิเตอร์สำหรับรับค่า detRR ใหม่
+  //var detRR = "ซ่อมเเล้ว";
+  // เรียกใช้ฟังก์ชัน updateDetRR เพื่ออัปเดตค่า detRR สำหรับ id ที่ระบุ
+  var updateResult = updateDetRR(sheet, idRR, detRR);
+  
+  var result = {};
+  result.result = updateResult ? 'updated' : 'not found';
+  var resultJSON = JSON.stringify(result);
+  return ContentService.createTextOutput(resultJSON).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ฟังก์ชันอัปเดตค่า detRR สำหรับ id ที่ระบุ
+function updateDetRR(sheet, idRR, detRR) {
+  var data = sheet.getDataRange().getValues();
+  for (var i = 0; i < data.length; i++) {
+    if (data[i][0] === idRR) {
+      // อัปเดตค่าในคอลัม 'detRR' ของแถวที่พบ id
+      sheet.getRange(i + 1, 5).setValue(detRR); // 3 คือลำดับคอลัม 'detRR'
+      return true; // คืนค่าเป็นจริงเพื่อระบุการอัปเดตสำเร็จ
+    }
+  }
+  return false; // ส่งคืนค่าเท็จหากไม่พบ id
+}
